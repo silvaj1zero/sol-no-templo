@@ -1,0 +1,1282 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>O Sol no Templo</title>
+<meta name="description" content="Simulação interativa da sombra do Sol no Templo de Salomão: Jachin, Boaz e as doze colunas zodiacais nos solstícios e equinócios, com o movimento real do Sol ao longo do dia e do ano.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="O Sol no Templo">
+<meta property="og:description" content="Simulação interativa da sombra do Sol no Templo de Salomão: Jachin, Boaz e as doze colunas zodiacais nos solstícios e equinócios, com o movimento real do Sol ao longo do dia e do ano.">
+<meta property="og:locale" content="pt_BR">
+<meta name="theme-color" content="#E4E8EC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C111B" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2317202D'/%3E%3Ccircle cx='32' cy='32' r='13' fill='%23F2B33D'/%3E%3Cpath d='M32 6v8M32 50v8M6 32h8M50 32h8M13.6 13.6l5.7 5.7M44.7 44.7l5.7 5.7M13.6 50.4l5.7-5.7M44.7 19.3l5.7-5.7' stroke='%23F2B33D' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Bellefair&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Symbols&text=%E2%99%88%E2%99%89%E2%99%8A%E2%99%8B%E2%99%8C%E2%99%8D%E2%99%8E%E2%99%8F%E2%99%90%E2%99%91%E2%99%92%E2%99%93%E2%98%89&display=swap">
+<style>
+/* Layout: a planta do templo é um relógio de sol (esquerda, grande) com os controles logo abaixo;
+   à direita, a roda do zodíaco (ano) e o céu visto de cima (dia). Notas de leitura no fim. */
+:root{
+  --bg:#E4E8EC;          /* névoa de pedra, puxada para o lápis-lazúli */
+  --surface:#F3F4F5;
+  --surface-2:#D9DEE4;
+  --ink:#17202D;
+  --muted:#545F6F;
+  --rule:#C3CAD3;
+  --court:#D8D0BF;       /* pedra de Jerusalém */
+  --floor:#CBC0A9;
+  --floor-dark:#7E7668;
+  --tile:#BCAF95;
+  --wall:#6A6152;
+  --bronze:#8C4C14;      /* bronze de Hirão */
+  --sun:#D18E12;
+  --sun-glow:#F2C14E;
+  --beam:#F7D98A;
+  --eq:#0E7768;
+  --jun:#A8303F;         /* romã dos capitéis */
+  --dec:#2D50A0;         /* lápis-lazúli */
+  --shade:#17202D;
+  --shade-op:.4;
+  --night:#0A1120;
+  --font-display:"Bellefair","Frank Ruhl Libre",Georgia,"Times New Roman",serif;
+  --font-body:"Alegreya Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --font-sym:"Noto Sans Symbols","Segoe UI Symbol","Apple Symbols","DejaVu Sans",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C111B; --surface:#131A27; --surface-2:#1A2333; --ink:#E7E3D9; --muted:#99A2B1; --rule:#28324A;
+    --court:#34312B; --floor:#2A2722; --floor-dark:#141310; --tile:#3D3931; --wall:#857A69;
+    --bronze:#D78E4C; --sun:#F2B33D; --sun-glow:#FFD77A; --beam:#B98A2E;
+    --eq:#3CC2A9; --jun:#EA6E80; --dec:#83A1EE; --shade:#000; --shade-op:.55; --night:#02050B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C111B; --surface:#131A27; --surface-2:#1A2333; --ink:#E7E3D9; --muted:#99A2B1; --rule:#28324A;
+  --court:#34312B; --floor:#2A2722; --floor-dark:#141310; --tile:#3D3931; --wall:#857A69;
+  --bronze:#D78E4C; --sun:#F2B33D; --sun-glow:#FFD77A; --beam:#B98A2E;
+  --eq:#3CC2A9; --jun:#EA6E80; --dec:#83A1EE; --shade:#000; --shade-op:.55; --night:#02050B;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+
+.mast{display:grid;gap:8px;margin-bottom:22px;max-width:72ch}
+.eyebrow{margin:0;font-family:var(--font-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--bronze)}
+h1{margin:0;font-family:var(--font-display);font-weight:400;font-size:clamp(42px,6.4vw,72px);line-height:.98;letter-spacing:.005em;text-wrap:balance}
+.lede{margin:0;font-size:19px;color:var(--muted);max-width:64ch}
+
+.grid{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:1000px){.grid{grid-template-columns:minmax(0,1fr)}}
+.main{display:grid;gap:16px;min-width:0}
+
+.plan-card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow:hidden;min-width:0}
+.plan-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px;padding:14px 16px 12px}
+.when{font-family:var(--font-display);font-size:30px;line-height:1.05}
+.where{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:3px}
+.chip{--chip:var(--bronze);display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:12px;letter-spacing:.05em;padding:5px 11px;border-radius:999px;border:1px solid var(--chip);color:var(--chip);white-space:nowrap}
+.chip .g{font-family:var(--font-sym);font-size:14px;line-height:1}
+.plan-wrap{background:var(--court);border-block:1px solid var(--rule)}
+#plan{display:block;width:100%;height:auto;touch-action:manipulation}
+.callout{margin:0;padding:14px 16px;font-size:16.5px;line-height:1.5;min-height:6.2em;max-width:80ch}
+.legend{list-style:none;margin:0;padding:0 16px 16px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px;color:var(--muted)}
+.legend li{display:inline-flex;align-items:center;gap:7px}
+.sw{display:inline-block;width:22px;border-top:2.5px solid var(--c)}
+.sw.dash{border-top-style:dashed}
+.sw.dot{border-top-style:dotted}
+.sw.thin{border-top-width:1px}
+.sw.half{width:11px}
+.callout .g{font-family:var(--font-sym)}
+
+/* Controles */
+.controls{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px;display:grid;gap:18px}
+.row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 14px;align-items:start}
+.play{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--ink);background:var(--ink);color:var(--surface);font:500 15px var(--font-body);cursor:pointer;margin-top:18px;min-width:96px;justify-content:center}
+.play svg{width:12px;height:12px;fill:currentColor}
+.play[aria-pressed="true"]{background:var(--sun);border-color:var(--sun);color:#1a1205}
+.slider{display:grid;gap:6px;min-width:0}
+.slider-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.slider-top label{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.slider-top output{font-family:var(--font-mono);font-size:14px;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--bronze);margin:0;height:26px}
+.seg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.seg button,.seg-btn{font:500 14px var(--font-body);padding:6px 12px;border-radius:999px;border:1px solid var(--rule);background:transparent;color:var(--ink);cursor:pointer}
+.seg button:hover{border-color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.seg button .k{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:6px;vertical-align:1px}
+.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px 22px;border-top:1px solid var(--rule);padding-top:16px}
+.field{display:grid;gap:6px;min-width:0;align-content:start}
+.field > .lbl{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.field select{font:15px var(--font-body);padding:7px 10px;border-radius:6px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);width:100%}
+.latline{display:flex;align-items:center;gap:10px}
+.latline output{font-family:var(--font-mono);font-size:13px;min-width:62px;text-align:right;font-variant-numeric:tabular-nums}
+.check{display:flex;align-items:center;gap:8px;font-size:15px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--bronze)}
+button:focus-visible,select:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
+
+/* Coluna lateral */
+.side{display:grid;gap:22px;min-width:0}
+.fig{margin:0;display:grid;gap:8px;border-top:1px solid var(--rule);padding-top:12px}
+.fig figcaption{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.fig figcaption b{font-family:var(--font-display);font-weight:400;font-size:22px}
+.fig figcaption span{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.fig svg{display:block;width:100%;max-width:400px;height:auto;margin:0 auto}
+.figcap{margin:0;font-size:14px;color:var(--muted)}
+.readout{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);border-top:1px solid var(--rule)}
+.readout dt,.readout dd{margin:0;padding:7px 0;border-bottom:1px solid var(--rule)}
+.readout dt{font-size:14px;color:var(--muted);padding-right:12px}
+.readout dd{font-family:var(--font-mono);font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums}
+.readout dd .g{font-family:var(--font-sym)}
+
+/* Notas */
+.notes{margin-top:44px;display:grid;gap:18px}
+.notes h2,.howto h2{margin:0;font-family:var(--font-display);font-weight:400;font-size:34px;line-height:1.1;text-wrap:balance}
+.jump{justify-self:start;font-family:var(--font-mono);font-size:13px;letter-spacing:.04em;color:var(--bronze);text-underline-offset:3px}
+.howto{margin-top:44px;display:grid;gap:18px;scroll-margin-top:16px}
+.how-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px 44px;align-items:start}
+@media (max-width:860px){.how-grid{grid-template-columns:minmax(0,1fr)}}
+.steps{margin:0;padding:0;list-style:none;counter-reset:st;display:grid;gap:14px}
+.steps li{counter-increment:st;display:grid;grid-template-columns:1.6em minmax(0,1fr);gap:10px;max-width:64ch}
+.steps li::before{content:counter(st);font-family:var(--font-display);font-size:30px;line-height:1;color:var(--bronze)}
+.steps p{margin:0}
+.tours{display:grid;gap:8px;min-width:0}
+.tours h3{margin:0;font-family:var(--font-display);font-weight:400;font-size:23px}
+.tours ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.tours li{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule)}
+.tours li > div{min-width:0}
+.tours li b{font-weight:500}
+.tours li p{margin:2px 0 0;font-size:15px;line-height:1.4;color:var(--muted)}
+.tour-btn{flex:none;font:500 14px var(--font-body);padding:7px 13px;border-radius:999px;border:1px solid var(--bronze);color:var(--bronze);background:transparent;cursor:pointer}
+.tour-btn:hover{background:var(--bronze);color:var(--surface)}
+.howto-note{margin:0;font-size:15px;color:var(--muted);max-width:90ch;border-top:1px solid var(--rule);padding-top:12px}
+.note-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 36px}
+@media (max-width:760px){.note-grid{grid-template-columns:minmax(0,1fr)}}
+.note{display:grid;gap:6px;align-content:start;border-top:1px solid var(--rule);padding-top:12px;min-width:0}
+.note h3{margin:0;font-family:var(--font-display);font-weight:400;font-size:23px;line-height:1.15}
+.note p{margin:0;max-width:62ch}
+.note .ref{font-family:var(--font-mono);font-size:12.5px;color:var(--bronze)}
+.foot{margin-top:40px;font-size:13.5px;color:var(--muted);max-width:90ch;border-top:1px solid var(--rule);padding-top:12px}
+
+/* SVG — planta */
+.court{fill:var(--court)}
+.floor{fill:var(--floor)}
+.tile-line{fill:none;stroke:var(--tile);stroke-width:.14}
+.mos-b{fill:var(--tile)}
+.roofshade{fill:var(--floor-dark);opacity:.88}
+.beam{fill:var(--beam);opacity:.92}
+.wall-solid{fill:var(--wall)}
+.wall-ghost{fill:none;stroke:var(--wall);stroke-width:.32;stroke-dasharray:1.3 .9}
+.dial-curve{fill:none;stroke-width:.5;stroke-linecap:round}
+.dial-curve.jun{stroke:var(--jun)} .dial-curve.eq{stroke:var(--eq)} .dial-curve.dec{stroke:var(--dec)}
+.hour-line{stroke:var(--muted);stroke-width:.16;opacity:.6}
+.hour-line.noon{stroke-width:.3;opacity:.9}
+.hour-lbl{font-family:var(--font-mono);font-size:2.2px;fill:var(--muted);text-anchor:middle;dominant-baseline:central}
+.axis{stroke:var(--muted);stroke-width:.2;stroke-dasharray:1.6 1.2;opacity:.75}
+.axis.lit{stroke:var(--sun);stroke-width:.7;opacity:1;stroke-dasharray:none}
+.solline{stroke-width:.32;stroke-dasharray:1.6 1.2;opacity:.85}
+.solline.jun{stroke:var(--jun)} .solline.dec{stroke:var(--dec)}
+.solline.lit{stroke-width:.85;opacity:1;stroke-dasharray:none}
+.ghost{stroke-width:.55;stroke-linecap:round;opacity:.95;fill:none}
+.ghost.jun{stroke:var(--jun)} .ghost.eq{stroke:var(--eq)} .ghost.dec{stroke:var(--dec)}
+.ghost-tip{stroke:var(--surface);stroke-width:.2}
+.ghost-tip.jun{fill:var(--jun)} .ghost-tip.eq{fill:var(--eq)} .ghost-tip.dec{fill:var(--dec)}
+.col-mk{fill:none;stroke-width:.42}
+.col-mk.jun{stroke:var(--jun)} .col-mk.eq{stroke:var(--eq)} .col-mk.dec{stroke:var(--dec)}
+#lShadow{opacity:calc(var(--shade-op) * var(--sf,1))}
+.sh{stroke:var(--shade);stroke-linecap:round;fill:none}
+.sh-poly{fill:var(--shade)}
+.circuit{fill:none;stroke:var(--sun);stroke-width:.32;stroke-dasharray:.5 1;opacity:.8}
+.token{fill:var(--sun);stroke:var(--ink);stroke-width:.22}
+.col{fill:var(--surface);stroke:var(--wall);stroke-width:.25}
+.col.on{stroke:var(--sun);stroke-width:.75}
+.halo{fill:var(--sun-glow);opacity:0}
+.halo.on{opacity:.55}
+.zg{font-family:var(--font-sym);font-size:3.5px;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.zg.on{fill:var(--bronze);font-weight:700}
+.pillar{fill:var(--bronze);stroke:var(--ink);stroke-width:.25}
+.p-lbl{font-family:var(--font-display);font-size:3.3px;fill:var(--ink);dominant-baseline:central}
+.room-lbl{font-family:var(--font-body);font-weight:500;font-size:2.5px;letter-spacing:.3px;text-transform:uppercase;fill:var(--muted);text-anchor:middle;dominant-baseline:central}
+.night{fill:var(--night)}
+.ring{fill:none;stroke:var(--wall);stroke-width:.3;opacity:.85}
+.tick{stroke:var(--wall);stroke-width:.22}
+.tick.major{stroke-width:.45}
+.card-lbl{font-family:var(--font-display);font-size:4.2px;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.sweep{fill:none;stroke:var(--sun);stroke-width:2.6;opacity:.25}
+.mk{stroke:var(--surface);stroke-width:.3}
+.mk.jun{fill:var(--jun)} .mk.eq{fill:var(--eq)} .mk.dec{fill:var(--dec)}
+.today-mk{fill:var(--sun);stroke:var(--ink);stroke-width:.22}
+.today-trace{fill:none;stroke:var(--sun);stroke-width:.5;stroke-dasharray:1.1 .8}
+.tipdot{fill:var(--sun);stroke:var(--ink);stroke-width:.25}
+.sunray{stroke:var(--sun);stroke-width:.3;opacity:.7;stroke-dasharray:.8 .8}
+.sun-disc{fill:var(--sun);stroke:var(--ink);stroke-width:.3}
+.sun-glow{fill:var(--sun-glow);opacity:.5}
+.below .sun-disc{fill:var(--court);stroke:var(--muted);stroke-dasharray:.6 .5}
+.below .sun-glow{opacity:0}
+.scale-bar{stroke:var(--ink);stroke-width:.45;fill:none}
+.scale-lbl{font-family:var(--font-mono);font-size:2.3px;fill:var(--ink)}
+@media (max-width:640px){
+  .zg{font-size:4.8px} .p-lbl{font-size:4.4px} .room-lbl{font-size:3px;letter-spacing:.1px}
+  .card-lbl{font-size:5.4px} .hour-lbl{font-size:3px} .scale-lbl{font-size:3.2px}
+}
+
+/* SVG — céu e roda */
+.sky-bg{fill:var(--surface)}
+.sky-h{fill:none;stroke:var(--ink);stroke-width:1}
+.sky-alt{fill:none;stroke:var(--rule);stroke-width:.8;stroke-dasharray:3 3}
+.sky-cross{stroke:var(--rule);stroke-width:.6}
+.sky-lbl{font-family:var(--font-display);font-size:13px;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.sky-small{font-family:var(--font-mono);font-size:8px;fill:var(--muted);text-anchor:middle;dominant-baseline:central}
+.sky-path{fill:none;stroke-width:2}
+.sky-path.jun{stroke:var(--jun)} .sky-path.eq{stroke:var(--eq)} .sky-path.dec{stroke:var(--dec)}
+.sky-today{fill:none;stroke:var(--sun);stroke-width:2;stroke-dasharray:4 3}
+.w-n{fill:var(--surface)} .w-s{fill:var(--surface-2)}
+.w-sec{stroke:var(--rule);stroke-width:1}
+.w-on{fill:none;stroke:var(--sun);stroke-width:3}
+.w-glyph{font-family:var(--font-sym);font-size:17px;fill:var(--ink);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.w-glyph.on{fill:var(--bronze);font-weight:700}
+.w-tick{stroke-width:2.2}
+.w-tick.jun{stroke:var(--jun)} .w-tick.eq{stroke:var(--eq)} .w-tick.dec{stroke:var(--dec)}
+.w-date{font-family:var(--font-mono);font-size:10px;fill:var(--ink);dominant-baseline:central}
+.w-half{font-family:var(--font-mono);font-size:8px;letter-spacing:.12em;fill:var(--muted);text-anchor:middle;text-transform:uppercase;dominant-baseline:central}
+.w-cg{font-family:var(--font-sym);font-size:30px;fill:var(--bronze);text-anchor:middle;dominant-baseline:central}
+.w-cn{font-family:var(--font-display);font-size:20px;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.w-cd{font-family:var(--font-mono);font-size:10px;fill:var(--muted);text-anchor:middle;dominant-baseline:central}
+.w-sun{cursor:grab}
+.w-sun:active{cursor:grabbing}
+#wheel{touch-action:none;cursor:pointer}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<noscript><p style="padding:16px;font:16px system-ui,sans-serif">Esta simulação precisa de JavaScript ativado no navegador.</p></noscript>
+<div class="wrap">
+  <header class="mast">
+    <p class="eyebrow">Arqueoastronomia · 1 Reis 6–7 · templo maçônico</p>
+    <h1>O Sol no Templo</h1>
+    <p class="lede">A planta do Templo de Salomão em côvados, com Jachin, Boaz e as doze colunas zodiacais. Mova a hora e a data: as sombras seguem a posição real do Sol, e o chão guarda as marcas dos solstícios e dos equinócios.</p>
+    <a class="jump" href="#como-usar">Como usar e roteiros prontos ↓</a>
+  </header>
+
+  <div class="grid">
+    <div class="main">
+      <section class="plan-card" aria-labelledby="whenTxt">
+        <div class="plan-head">
+          <div>
+            <div class="when" id="whenTxt">20 de março de 2026</div>
+            <div class="where" id="whereTxt">Jerusalém · 31,8° N · 06h19 hora solar</div>
+          </div>
+          <span class="chip" id="chip">Equinócio de março</span>
+        </div>
+        <div class="plan-wrap">
+          <svg id="plan" viewBox="-110 -74 220 148" role="img" aria-label="Planta do templo com as sombras das colunas">
+            <defs>
+              <pattern id="pTiles" patternUnits="userSpaceOnUse" width="5" height="5">
+                <rect width="5" height="5" class="floor"></rect>
+                <path d="M0 0H5M0 0V5" class="tile-line"></path>
+              </pattern>
+              <pattern id="pMosaic" patternUnits="userSpaceOnUse" width="5" height="5">
+                <rect width="5" height="5" class="floor"></rect>
+                <rect width="2.5" height="2.5" class="mos-b"></rect>
+                <rect x="2.5" y="2.5" width="2.5" height="2.5" class="mos-b"></rect>
+              </pattern>
+              <clipPath id="clipInterior"><rect x="-35" y="-10" width="70" height="20"></rect></clipPath>
+              <clipPath id="clipBeam"></clipPath>
+              <clipPath id="clipExt"></clipPath>
+            </defs>
+            <rect class="court" x="-300" y="-300" width="600" height="600"></rect>
+            <g id="lFloor"></g>
+            <g id="lRoofShade"></g>
+            <g id="lBeam" clip-path="url(#clipInterior)"></g>
+            <g id="lDial"></g>
+            <line id="axis" class="axis"></line>
+            <g id="lSol"></g>
+            <g id="lShadow">
+              <g id="shExt"></g>
+              <g id="shIntWrap"><g id="shInt"></g></g>
+            </g>
+            <g id="lGhost"></g>
+            <g id="lWalls"></g>
+            <path id="circuit" class="circuit"></path>
+            <g id="lCols"></g>
+            <circle id="token" class="token" r="1.5"></circle>
+            <g id="lPillars"></g>
+            <g id="lLabels"></g>
+            <rect id="night" class="night" x="-300" y="-300" width="600" height="600" opacity="0"></rect>
+            <g id="lRing"></g>
+            <path id="todayTrace" class="today-trace"></path>
+            <circle id="tipDot" class="tipdot" r="1"></circle>
+            <line id="sunray" class="sunray"></line>
+            <g id="sunIcon"><circle class="sun-glow" r="5.2"></circle><circle class="sun-disc" r="3"></circle></g>
+            <g id="lScale"></g>
+          </svg>
+        </div>
+        <p class="callout" id="callout"></p>
+        <ul class="legend" aria-label="Legenda das marcações">
+          <li><span class="sw" style="--c:var(--jun)"></span>Solstício de junho</li>
+          <li><span class="sw" style="--c:var(--eq)"></span>Equinócios (linha reta)</li>
+          <li><span class="sw" style="--c:var(--dec)"></span>Solstício de dezembro</li>
+          <li><span class="sw dash" style="--c:var(--sun)"></span>Ponta da sombra hoje</li>
+          <li><span class="sw thin" style="--c:var(--muted)"></span>Linhas de hora solar</li>
+          <li><span class="sw dot" style="--c:var(--sun)"></span>Viagem pelas 12 colunas</li>
+          <li><span class="sw dash half" style="--c:var(--jun)"></span><span class="sw dash half" style="--c:var(--dec)"></span>Diagonais dos solstícios</li>
+          <li><span class="sw half" style="--c:var(--jun)"></span><span class="sw half" style="--c:var(--eq)"></span><span class="sw half" style="--c:var(--dec)"></span>Sombras de J e B em cada marco</li>
+        </ul>
+      </section>
+
+      <section class="controls" aria-label="Controles do Sol">
+        <div class="row">
+          <button class="play" id="playDay" type="button" aria-pressed="false"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5z"></path></svg><span>Dia</span></button>
+          <div class="slider">
+            <div class="slider-top"><label for="time">Hora solar</label><output id="timeOut" for="time">06h19</output></div>
+            <input type="range" id="time" min="0" max="1440" step="1" value="379">
+            <div class="seg" role="group" aria-label="Momento do dia">
+              <button type="button" data-anchor="rise" aria-pressed="true">Nascer</button>
+              <button type="button" data-anchor="noon" aria-pressed="false">Meio-dia</button>
+              <button type="button" data-anchor="set" aria-pressed="false">Pôr</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <button class="play" id="playYear" type="button" aria-pressed="false"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5z"></path></svg><span>Ano</span></button>
+          <div class="slider">
+            <div class="slider-top"><label for="date">Data (2026)</label><output id="dateOut" for="date">20 mar</output></div>
+            <input type="range" id="date" min="0" max="364" step="1" value="78">
+            <div class="seg" id="keyBtns" role="group" aria-label="Solstícios e equinócios"></div>
+          </div>
+        </div>
+        <div class="settings">
+          <div class="field">
+            <label class="lbl" for="place">Local</label>
+            <select id="place"></select>
+            <div class="latline"><input type="range" id="lat" min="-60" max="60" step="0.1" value="31.8" aria-label="Latitude"><output id="latOut" for="lat">31,8° N</output></div>
+          </div>
+          <div class="field">
+            <span class="lbl" id="layoutLbl">Planta</span>
+            <div class="seg" role="group" aria-labelledby="layoutLbl">
+              <button type="button" data-layout="salomao" aria-pressed="true">Templo de Salomão</button>
+              <button type="button" data-layout="loja" aria-pressed="false">Loja maçônica</button>
+            </div>
+          </div>
+          <div class="field">
+            <span class="lbl" id="roofLbl">Cobertura</span>
+            <div class="seg" role="group" aria-labelledby="roofLbl">
+              <button type="button" data-roof="0" aria-pressed="true">Céu aberto</button>
+              <button type="button" data-roof="1" aria-pressed="false">Com telhado</button>
+            </div>
+          </div>
+          <div class="field">
+            <label class="lbl" for="zdir">Colunas zodiacais</label>
+            <select id="zdir">
+              <option value="oriente">Áries junto ao Oriente</option>
+              <option value="ocidente">Áries junto ao Ocidente</option>
+            </select>
+            <label class="check"><input type="checkbox" id="dial" checked> Marcações do relógio de sol</label>
+            <label class="check"><input type="checkbox" id="ghost" checked> Comparar sombras dos marcos</label>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="side">
+      <figure class="fig">
+        <figcaption><b>A viagem anual</b><span>arraste o Sol</span></figcaption>
+        <svg id="wheel" viewBox="0 0 290 262" role="img" aria-label="Roda do zodíaco com a posição do Sol"></svg>
+        <p class="figcap">Metade de cima: signos com o Sol ao norte do equador, as colunas do Norte. Metade de baixo: as colunas do Sul.</p>
+      </figure>
+      <figure class="fig">
+        <figcaption><b>O caminho no céu</b><span>vista de cima</span></figcaption>
+        <svg id="sky" viewBox="0 0 240 240" role="img" aria-label="Trajetória do Sol no céu"></svg>
+        <p class="figcap">Norte para cima, como na planta. O centro é o zênite e a borda é o horizonte.</p>
+      </figure>
+      <dl class="readout" id="readout"></dl>
+    </aside>
+  </div>
+
+  <section class="howto" id="como-usar" aria-labelledby="howH">
+    <h2 id="howH">Como usar</h2>
+    <div class="how-grid">
+      <ol class="steps">
+        <li><p><b>Escolha a data.</b> Arraste a barra Data, toque num dos quatro marcos ou arraste o Sol na roda do zodíaco. Com a roda selecionada, as setas do teclado mudam um dia e Shift + seta muda dez.</p></li>
+        <li><p><b>Escolha a hora.</b> Use a barra Hora solar ou os botões Nascer, Meio-dia e Pôr. Nascer e Pôr põem o Sol 4° acima do horizonte, quando as sombras são longas e ainda nítidas.</p></li>
+        <li><p><b>Anime.</b> Dia passa as horas do nascer ao pôr. Ano passa as datas e mantém o momento escolhido: com Nascer marcado, o nascente vai e volta entre os solstícios. Toque de novo para pausar.</p></li>
+        <li><p><b>Leia a planta.</b> O texto logo abaixo dela diz o que está acontecendo: direção e tamanho da sombra, colunas tocadas e até onde vai a luz. A legenda identifica as marcas do chão, e o quadro ao lado traz os números.</p></li>
+        <li><p><b>Mude o cenário.</b> Troque o local (no Hemisfério Sul as sombras viram para o sul), a planta (Templo de Salomão ou loja maçônica), a cobertura e a ordem das colunas zodiacais.</p></li>
+      </ol>
+      <div class="tours">
+        <h3>Roteiros prontos</h3>
+        <ul>
+          <li><div><b>A sombra do equinócio nas colunas</b><p>No nascer de 20 de março, a sombra de Boaz corre sobre as seis colunas do Norte.</p></div><button type="button" class="tour-btn" data-tour="eqcols">Ver na planta</button></li>
+          <li><div><b>A luz até o Santo dos Santos</b><p>Com telhado, a luz do equinócio entra pela porta leste e percorre o eixo.</p></div><button type="button" class="tour-btn" data-tour="eqlight">Ver na planta</button></li>
+          <li><div><b>O X dos solstícios</b><p>No nascer de 21 de junho, acende a diagonal que liga ao pôr de dezembro.</p></div><button type="button" class="tour-btn" data-tour="solx">Ver na planta</button></li>
+          <li><div><b>As três sombras do meio-dia</b><p>As sombras de junho, dos equinócios e de dezembro alinhadas no meridiano.</p></div><button type="button" class="tour-btn" data-tour="noon">Ver na planta</button></li>
+          <li><div><b>O nascente que vai e volta</b><p>O ano inteiro em 15 segundos, sempre no nascer do Sol.</p></div><button type="button" class="tour-btn" data-tour="swing">Ver na planta</button></li>
+          <li><div><b>No Hemisfério Sul</b><p>Em São Paulo, a sombra de meio-dia de junho aponta para o sul e é a mais longa do ano.</p></div><button type="button" class="tour-btn" data-tour="south">Ver na planta</button></li>
+          <li><div><b>A loja maçônica</b><p>No pôr do sol do equinócio, a luz entra pela porta do Ocidente e chega ao Oriente.</p></div><button type="button" class="tour-btn" data-tour="lodge">Ver na planta</button></li>
+        </ul>
+      </div>
+    </div>
+    <p class="howto-note"><b>Hora solar não é a hora do relógio.</b> Aqui, 12h00 é o instante em que o Sol cruza o meridiano do lugar. A diferença para a hora oficial depende da longitude dentro do fuso, da época do ano (até cerca de 16 minutos) e do horário de verão.</p>
+  </section>
+
+  <section class="notes" aria-labelledby="notesH">
+    <h2 id="notesH">Como ler a planta</h2>
+    <div class="note-grid">
+      <article class="note">
+        <h3>O eixo do equinócio</h3>
+        <p>A entrada do Templo ficava a Leste e o Santo dos Santos a Oeste. Nos equinócios o Sol nasce no Leste exato, e a luz da manhã percorre o eixo do edifício. Na loja maçônica a orientação se inverte: o Oriente fica no fundo e a porta no Ocidente, então é o pôr do sol do equinócio que entra pela porta.</p>
+        <span class="ref">Ezequiel 8:16 · homens à porta do Templo, de frente para o Oriente, adorando o Sol nascente</span>
+      </article>
+      <article class="note">
+        <h3>Jachin e Boaz como gnômons</h3>
+        <p>Cada coluna media 18 côvados, com um capitel de mais 5: 23 côvados, cerca de 10 m. A ponta da sombra desenha no chão uma hipérbole em cada solstício e uma linha reta nos equinócios. As linhas de hora são retas porque cada hora solar é um plano que passa pelo eixo do mundo e pelo topo da coluna.</p>
+        <span class="ref">1 Reis 7:15–21 · Jachin à direita (Sul), Boaz à esquerda (Norte)</span>
+      </article>
+      <article class="note">
+        <h3>As doze colunas zodiacais</h3>
+        <p>Nos templos maçônicos, as seis colunas do Norte levam os signos em que o Sol está ao norte do equador celeste, de Áries a Virgem (março a setembro). As seis do Sul levam de Libra a Peixes. A ordem ao longo das paredes varia entre ritos e lojas; troque a disposição nos ajustes.</p>
+        <span class="ref">Cada coluna corresponde a 30° da eclíptica, cerca de um mês</span>
+      </article>
+      <article class="note">
+        <h3>As portas solsticiais</h3>
+        <p>Câncer e Capricórnio marcam os extremos da viagem: o nascente para de avançar para o norte ou para o sul e volta. Porfírio e Macróbio chamavam Câncer de porta dos homens e Capricórnio de porta dos deuses. A maçonaria liga esses pontos a São João Batista e São João Evangelista, as duas paralelas que ladeiam o círculo com um ponto no centro.</p>
+        <span class="ref">24 de junho · 27 de dezembro</span>
+      </article>
+      <article class="note">
+        <h3>O X dos solstícios</h3>
+        <p>O nascer do Sol no solstício de junho e o pôr no de dezembro ficam na mesma reta. O nascer de dezembro e o pôr de junho ficam em outra. As duas retas cruzam a planta em X. Em Jerusalém elas se abrem cerca de 28° para cada lado do eixo Leste–Oeste; em São Paulo, cerca de 26°. No dia do solstício, a diagonal acende quando o Sol está baixo na direção dela.</p>
+        <span class="ref">abertura = arcsen(sen 23,44° ÷ cos latitude)</span>
+      </article>
+      <article class="note">
+        <h3>Três sombras ao meio-dia</h3>
+        <p>Com “Meio-dia” e a comparação ligada, as sombras de Jachin e Boaz nos três marcos caem alinhadas no meridiano. Fora dos trópicos, a mais curta é a do solstício de verão do lugar e a mais longa a do solstício de inverno. Medir a sombra do meio-dia num gnômon foi um dos primeiros jeitos de achar os solstícios e contar o ano.</p>
+        <span class="ref">Boaz em Jerusalém: 3,4 · 14,3 · 33,1 côvados</span>
+      </article>
+    </div>
+  </section>
+
+  <p class="foot">Modelo: posição do Sol pelo algoritmo simplificado do Almanaque Náutico (precisão melhor que 0,1°), em hora solar verdadeira, sem refração atmosférica; datas de 2026. Dimensões em côvados de 1 Reis 6–7 (casa de 60 × 20 côvados, 30 de altura, pórtico de 10). A altura das colunas zodiacais (12 côvados) e as larguras das portas são ilustrativas. Côvado comum ≈ 45 cm. A posição de J e B e a ordem dos signos variam entre ritos.</p>
+</div>
+
+<script>
+(() => {
+'use strict';
+const DEG = Math.PI / 180, RAD = 180 / Math.PI;
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const mod = (a, n) => ((a % n) + n) % n;
+const fmt = (v, d = 1) => v.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const r2 = v => Math.round(v * 100) / 100;
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const setA = (e, attrs) => { for (const k in attrs) e.setAttribute(k, attrs[k]); };
+
+const VS = '︎';
+const SIGNS = [
+  ['Áries', '♈'], ['Touro', '♉'], ['Gêmeos', '♊'], ['Câncer', '♋'],
+  ['Leão', '♌'], ['Virgem', '♍'], ['Libra', '♎'], ['Escorpião', '♏'],
+  ['Sagitário', '♐'], ['Capricórnio', '♑'], ['Aquário', '♒'], ['Peixes', '♓']
+];
+const MONTHS = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DIR16 = ['N','NNE','NE','ENE','L','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+const DIR8 = ['o norte','o nordeste','o leste','o sudeste','o sul','o sudoeste','o oeste','o noroeste'];
+
+/* ---------- Astronomia ---------- */
+const EPS = 23.4393;
+// d = dias desde 2026-01-01 00:00 UT
+function solar(d) {
+  const n = 9496.5 + d;
+  const L = 280.460 + 0.9856474 * n;
+  const g = (357.528 + 0.9856003 * n) * DEG;
+  const lam = mod(L + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g), 360);
+  const eps = (23.439 - 0.0000004 * n) * DEG;
+  return { lam, dec: Math.asin(Math.sin(eps) * Math.sin(lam * DEG)) };
+}
+// vetor unitário do Sol: e = leste, n = norte, u = zênite
+function horiz(dec, H, phi) {
+  return {
+    e: -Math.cos(dec) * Math.sin(H),
+    n: Math.sin(dec) * Math.cos(phi) - Math.cos(dec) * Math.sin(phi) * Math.cos(H),
+    u: Math.sin(dec) * Math.sin(phi) + Math.cos(dec) * Math.cos(phi) * Math.cos(H)
+  };
+}
+const LAMTAB = [];
+for (let d = 0; d < 365; d++) LAMTAB.push(solar(d + 0.5).lam);
+function findCross(target) {
+  const f = d => mod(solar(d).lam - target + 180, 360) - 180;
+  for (let d = 0; d < 365; d += 0.25) {
+    if (f(d) < 0 && f(d + 0.25) >= 0) {
+      let lo = d, hi = d + 0.25;
+      for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (f(m) < 0) lo = m; else hi = m; }
+      return (lo + hi) / 2;
+    }
+  }
+  return 0;
+}
+const KEYS = [
+  { id: 'eqMar', lam: 0,   name: 'Equinócio de março',    short: 'Equinócio mar.', kind: 'eq',  sign: 0 },
+  { id: 'solJun', lam: 90,  name: 'Solstício de junho',    short: 'Solstício jun.', kind: 'jun', sign: 3 },
+  { id: 'eqSet', lam: 180, name: 'Equinócio de setembro', short: 'Equinócio set.', kind: 'eq',  sign: 6 },
+  { id: 'solDez', lam: 270, name: 'Solstício de dezembro', short: 'Solstício dez.', kind: 'dec', sign: 9 }
+];
+KEYS.forEach(k => { k.t = findCross(k.lam); k.day = Math.floor(k.t); });
+
+function dateParts(day) { const dt = new Date(Date.UTC(2026, 0, 1) + day * 864e5); return { d: dt.getUTCDate(), m: dt.getUTCMonth() }; }
+const fmtDate = day => { const p = dateParts(day); return `${p.d} de ${MONTHS[p.m]}`; };
+const fmtDateShort = day => { const p = dateParts(day); return `${p.d} ${MONTHS[p.m].slice(0, 3)}`; };
+function fmtTime(t) {
+  t = mod(t, 24); let h = Math.floor(t), mi = Math.round((t - h) * 60);
+  if (mi === 60) { h = (h + 1) % 24; mi = 0; }
+  return `${String(h).padStart(2, '0')}h${String(mi).padStart(2, '0')}`;
+}
+const latStr = lat => `${fmt(Math.abs(lat), 1)}° ${lat >= 0 ? 'N' : 'S'}`;
+const dir16 = az => DIR16[Math.round(mod(az, 360) / 22.5) % 16];
+const dir8 = az => DIR8[Math.round(mod(az, 360) / 45) % 8];
+
+/* ---------- Geometria (côvados) ---------- */
+const G = {
+  half: 35, halfW: 10, wallT: 2.5, bH: 30,
+  porchX: 25, veilX: -15, doorHalf: 4.5, veilHalf: 3.5, doorH: 20, partT: 1.2,
+  pil: { x: 39.5, y: 6, r: 1.9, h: 23 },
+  col: { y: 7.8, r: 1.25, h: 12, xs: [-30.5, -20.3, -10.1, 0.1, 10.3, 20.5] },
+  ring: 66, cubit: 0.45, cap: 300
+};
+const PLACES = [
+  { id: 'jerusalem', name: 'Jerusalém', lat: 31.778 },
+  { id: 'saopaulo', name: 'São Paulo', lat: -23.55 },
+  { id: 'rio', name: 'Rio de Janeiro', lat: -22.91 },
+  { id: 'brasilia', name: 'Brasília', lat: -15.79 },
+  { id: 'portoalegre', name: 'Porto Alegre', lat: -30.03 },
+  { id: 'lisboa', name: 'Lisboa', lat: 38.72 },
+  { id: 'londres', name: 'Londres', lat: 51.51 },
+  { id: 'cancer', name: 'Trópico de Câncer', lat: 23.44 },
+  { id: 'equador', name: 'Linha do Equador', lat: 0 },
+  { id: 'custom', name: 'Latitude personalizada', lat: null }
+];
+
+/* ---------- Estado ---------- */
+const S = {
+  day: KEYS[1].day, dayF: KEYS[1].day, t: 6, anchor: 'rise',
+  lat: 31.778, place: 'jerusalem', layout: 'salomao', roof: false, zdir: 'oriente', dial: true, ghost: true,
+  playing: null, narrow: false
+};
+const M = () => (S.layout === 'salomao' ? 1 : -1);
+const gnomon = () => (S.lat >= 0 ? { name: 'Boaz', x: M() * G.pil.x, y: G.pil.y, h: G.pil.h } : { name: 'Jachin', x: M() * G.pil.x, y: -G.pil.y, h: G.pil.h });
+const placeName = () => (PLACES.find(p => p.id === S.place) || PLACES[0]).name;
+
+function sunAt(day, t) {
+  const { lam, dec } = solar(day + t / 24);
+  const phi = S.lat * DEG, H = (t - 12) * 15 * DEG;
+  const v = horiz(dec, H, phi);
+  const alt = Math.asin(clamp(v.u, -1, 1)) * RAD;
+  const az = mod(Math.atan2(v.e, v.n) * RAD, 360);
+  return { lam, dec, H, e: v.e, n: v.n, u: v.u, alt, az };
+}
+function timeForAlt(day, altDeg, side) {
+  const { dec } = solar(day + 0.5), phi = S.lat * DEG;
+  const c = (Math.sin(altDeg * DEG) - Math.sin(phi) * Math.sin(dec)) / (Math.cos(phi) * Math.cos(dec));
+  if (c > 1) return null;
+  if (c < -1) return side < 0 ? 0 : 24;
+  return 12 + side * Math.acos(c) * RAD / 15;
+}
+function anchorTime() {
+  if (S.anchor === 'noon') return 12;
+  const t = timeForAlt(S.day, 4, S.anchor === 'rise' ? -1 : 1);
+  return t == null ? 12 : t;
+}
+const riseAz = dec => Math.acos(clamp(Math.sin(dec) / Math.cos(S.lat * DEG), -1, 1)) * RAD;
+
+/* ---------- Planta ---------- */
+const plan = $('#plan');
+const L = id => document.getElementById(id);
+const P = (x, y) => `${r2(x)},${r2(-y)}`;
+let refs = {};
+
+const vbox = () => (S.narrow ? { x: -80, y: -74, w: 160, h: 148 } : { x: -110, y: -74, w: 220, h: 148 });
+
+function tipOf(g, dec, H, phi) {
+  const v = horiz(dec, H, phi);
+  if (v.u <= Math.sin(4 * DEG)) return null;
+  return [g.x - g.h * v.e / v.u, g.y - g.h * v.n / v.u];
+}
+function curvePath(g, dec) {
+  const phi = S.lat * DEG; let d = '', pen = false;
+  for (let Hd = -180; Hd <= 180; Hd += 0.5) {
+    const p = tipOf(g, dec, Hd * DEG, phi);
+    if (!p) { pen = false; continue; }
+    d += (pen ? 'L' : 'M') + P(p[0], p[1]); pen = true;
+  }
+  return d;
+}
+function colPositions() {
+  const m = M();
+  const xs = G.col.xs.map(x => m * x).sort((a, b) => a - b); // oeste → leste
+  const ew = xs.slice().reverse();
+  const pos = new Array(12);
+  for (let i = 0; i < 6; i++) {
+    if (S.zdir === 'oriente') { pos[i] = [ew[i], G.col.y]; pos[6 + i] = [xs[i], -G.col.y]; }
+    else { pos[i] = [xs[i], G.col.y]; pos[6 + i] = [ew[i], -G.col.y]; }
+  }
+  return pos;
+}
+function hull(pts) {
+  pts = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], up = [];
+  for (const p of pts) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+  for (let i = pts.length - 1; i >= 0; i--) { const p = pts[i]; while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+  up.pop(); lo.pop(); return lo.concat(up);
+}
+
+function buildPlan() {
+  const b = vbox(), m = M();
+  plan.setAttribute('viewBox', `${b.x} ${b.y} ${b.w} ${b.h}`);
+  ['lFloor', 'lRoofShade', 'lWalls', 'lCols', 'lPillars', 'lLabels', 'lRing', 'lScale', 'shExt', 'shInt', 'lDial'].forEach(id => { L(id).innerHTML = ''; });
+  refs = { cols: [], halos: [], glyphs: [] };
+
+  // piso interno
+  el('rect', { x: -G.half, y: -G.halfW, width: 2 * G.half, height: 2 * G.halfW, fill: S.layout === 'loja' ? 'url(#pMosaic)' : 'url(#pTiles)' }, L('lFloor'));
+  if (S.roof) el('rect', { x: -G.half, y: -G.halfW, width: 2 * G.half, height: 2 * G.halfW, class: 'roofshade' }, L('lRoofShade'));
+
+  // paredes (coordenadas locais → mundo)
+  const W = L('lWalls');
+  const rectL = (x0, x1, y0, y1, cls) => {
+    const a = m * x0, c = m * x1;
+    el('rect', { x: r2(Math.min(a, c)), y: r2(-Math.max(y0, y1)), width: r2(Math.abs(c - a)), height: r2(Math.abs(y1 - y0)), class: cls }, W);
+  };
+  const o = G.half + G.wallT, hw = G.halfW, wt = G.wallT;
+  if (S.roof) {
+    rectL(-o, o, hw, hw + wt, 'wall-solid');
+    rectL(-o, o, -hw - wt, -hw, 'wall-solid');
+    rectL(-o, -G.half, -hw, hw, 'wall-solid');
+    rectL(G.half, o, G.doorHalf, hw, 'wall-solid');
+    rectL(G.half, o, -hw, -G.doorHalf, 'wall-solid');
+    const pt = G.partT / 2;
+    rectL(G.porchX - pt, G.porchX + pt, G.doorHalf, hw, 'wall-solid');
+    rectL(G.porchX - pt, G.porchX + pt, -hw, -G.doorHalf, 'wall-solid');
+    rectL(G.veilX - pt, G.veilX + pt, G.veilHalf, hw, 'wall-solid');
+    rectL(G.veilX - pt, G.veilX + pt, -hw, -G.veilHalf, 'wall-solid');
+  } else {
+    rectL(-o, o, -hw - wt, hw + wt, 'wall-ghost');
+    const ln = (x0, y0, x1, y1) => el('line', { x1: r2(m * x0), y1: r2(-y0), x2: r2(m * x1), y2: r2(-y1), class: 'wall-ghost' }, W);
+    ln(G.porchX, hw, G.porchX, G.doorHalf); ln(G.porchX, -hw, G.porchX, -G.doorHalf);
+    ln(G.veilX, hw, G.veilX, G.veilHalf); ln(G.veilX, -hw, G.veilX, -G.veilHalf);
+  }
+
+  // sombras: elementos reutilizáveis
+  refs.bld = el('polygon', { class: 'sh-poly', points: '' }, L('shExt'));
+  refs.shB = el('line', { class: 'sh', 'stroke-width': 2 * G.pil.r }, L('shExt'));
+  refs.shJ = el('line', { class: 'sh', 'stroke-width': 2 * G.pil.r }, L('shExt'));
+  refs.shCols = [];
+  for (let i = 0; i < 12; i++) refs.shCols.push(el('line', { class: 'sh', 'stroke-width': 2 * G.col.r }, L('shInt')));
+  const wrap = L('shIntWrap'), inner = L('shInt');
+  if (S.roof) { wrap.setAttribute('clip-path', 'url(#clipInterior)'); inner.setAttribute('clip-path', 'url(#clipBeam)'); L('shExt').setAttribute('clip-path', 'url(#clipExt)'); }
+  else { wrap.removeAttribute('clip-path'); inner.removeAttribute('clip-path'); L('shExt').removeAttribute('clip-path'); }
+
+  // colunas zodiacais
+  refs.colPos = colPositions();
+  const C = L('lCols');
+  const colKind = { 0: 'eq', 3: 'jun', 6: 'eq', 9: 'dec' };
+  refs.colPos.forEach((p, i) => {
+    if (colKind[i]) el('circle', { cx: r2(p[0]), cy: r2(-p[1]), r: G.col.r + 0.8, class: 'col-mk ' + colKind[i] }, C);
+    refs.halos.push(el('circle', { cx: r2(p[0]), cy: r2(-p[1]), r: 3.2, class: 'halo' }, C));
+    refs.cols.push(el('circle', { cx: r2(p[0]), cy: r2(-p[1]), r: G.col.r, class: 'col' }, C));
+    const t = el('text', { x: r2(p[0]), y: r2(-(p[1] > 0 ? p[1] - 3.7 : p[1] + 3.7)), class: 'zg' }, C);
+    t.textContent = SIGNS[i][1] + VS;
+    const ti = el('title', null, t); ti.textContent = SIGNS[i][0];
+    refs.glyphs.push(t);
+  });
+  // circuito simbólico
+  L('circuit').setAttribute('d', 'M' + refs.colPos.map(p => P(p[0], p[1])).join('L') + 'Z');
+
+  // Jachin e Boaz
+  const PL = L('lPillars');
+  const px = m * G.pil.x;
+  el('circle', { cx: r2(px), cy: -G.pil.y, r: G.pil.r, class: 'pillar' }, PL);
+  el('circle', { cx: r2(px), cy: G.pil.y, r: G.pil.r, class: 'pillar' }, PL);
+  const lx = px + m * 3.2, anc = m > 0 ? 'start' : 'end';
+  const tb = el('text', { x: r2(lx), y: -G.pil.y, class: 'p-lbl', 'text-anchor': anc }, PL); tb.textContent = m > 0 ? 'Boaz · בעז' : 'בעז · Boaz';
+  const tj = el('text', { x: r2(lx), y: G.pil.y, class: 'p-lbl', 'text-anchor': anc }, PL); tj.textContent = m > 0 ? 'Jachin · יכין' : 'יכין · Jachin';
+
+  // nomes dos espaços, no lado livre de sombras
+  const ly = S.lat >= 0 ? -(G.halfW + G.wallT + 3.6) : (G.halfW + G.wallT + 3.6);
+  const names = S.layout === 'salomao' ? ['Santo dos Santos', 'Lugar Santo', 'Pórtico'] : ['Oriente', 'Templo', 'Ocidente · porta'];
+  [[-25, names[0]], [5, names[1]], [30, names[2]]].forEach(([x, n]) => {
+    const t = el('text', { x: r2(m * x), y: r2(-ly), class: 'room-lbl' }, L('lLabels')); t.textContent = n;
+  });
+
+  // eixo do templo
+  setA(L('axis'), { x1: -G.ring, y1: 0, x2: G.ring, y2: 0 });
+
+  // diagonais dos solstícios: braços do centro até o nascer/pôr de cada solstício
+  const SL = L('lSol'); SL.innerHTML = '';
+  const aJ = riseAz(EPS * DEG), aD = riseAz(-EPS * DEG);
+  refs.arms = [[aJ, 'jun', 'rise'], [360 - aJ, 'jun', 'set'], [aD, 'dec', 'rise'], [360 - aD, 'dec', 'set']].map(([az, k, ev]) => ({
+    az, k, ev,
+    line: el('line', { x1: 0, y1: 0, x2: r2(G.ring * Math.sin(az * DEG)), y2: r2(-G.ring * Math.cos(az * DEG)), class: 'solline ' + k }, SL)
+  }));
+
+  // anel do horizonte
+  const R = L('lRing'), Rr = G.ring;
+  el('circle', { r: Rr, class: 'ring' }, R);
+  for (let a = 0; a < 360; a += 10) {
+    const major = a % 30 === 0, l = major ? 2.2 : 1.1;
+    const s = Math.sin(a * DEG), c = Math.cos(a * DEG);
+    el('line', { x1: r2(Rr * s), y1: r2(-Rr * c), x2: r2((Rr + l) * s), y2: r2(-(Rr + l) * c), class: 'tick' + (major ? ' major' : '') }, R);
+  }
+  [['N', 0], ['L', 90], ['S', 180], ['O', 270]].forEach(([t, a]) => {
+    const s = Math.sin(a * DEG), c = Math.cos(a * DEG), rr = Rr + 5.2;
+    const tx = el('text', { x: r2(rr * s), y: r2(-rr * c), class: 'card-lbl' }, R); tx.textContent = t;
+  });
+  // faixa anual do nascer e do pôr + marcos
+  const E = EPS * DEG;
+  const azJ = riseAz(E), azD = riseAz(-E);
+  const pa = a => P(Rr * Math.sin(a * DEG), Rr * Math.cos(a * DEG));
+  el('path', { d: `M${pa(azJ)}A${Rr},${Rr} 0 0 1 ${pa(azD)}`, class: 'sweep' }, R);
+  el('path', { d: `M${pa(360 - azD)}A${Rr},${Rr} 0 0 1 ${pa(360 - azJ)}`, class: 'sweep' }, R);
+  [[azJ, 'jun'], [90, 'eq'], [azD, 'dec']].forEach(([a, k]) => {
+    [a, 360 - a].forEach(aa => el('circle', { cx: r2(Rr * Math.sin(aa * DEG)), cy: r2(-Rr * Math.cos(aa * DEG)), r: 1.25, class: 'mk ' + k }, R));
+  });
+  refs.todayRise = el('circle', { r: 0.9, class: 'today-mk' }, R);
+  refs.todaySet = el('circle', { r: 0.9, class: 'today-mk' }, R);
+
+  // escala
+  const SC = L('lScale');
+  const sx0 = b.x + 5, sy0 = b.y + b.h - 5;
+  el('path', { d: `M${sx0},${sy0 - 1}V${sy0}H${sx0 + 10}V${sy0 - 1}M${sx0 + 5},${sy0}v-.6`, class: 'scale-bar' }, SC);
+  const st = el('text', { x: sx0, y: sy0 - 2.6, class: 'scale-lbl' }, SC); st.textContent = '10 côvados ≈ 4,5 m';
+
+  buildDial();
+}
+
+function buildDial() {
+  const D = L('lDial'); D.innerHTML = '';
+  if (!S.dial) return;
+  const g = gnomon(), phi = S.lat * DEG, E = EPS * DEG;
+  [[E, 'jun'], [0, 'eq'], [-E, 'dec']].forEach(([dec, k]) => el('path', { d: curvePath(g, dec), class: 'dial-curve ' + k }, D));
+  const b = vbox(), inset = 3.5;
+  const inside = p => p[0] > b.x + inset && p[0] < b.x + b.w - inset && -p[1] > b.y + inset && -p[1] < b.y + b.h - inset;
+  for (let h = 4; h <= 20; h++) {
+    const H = (h - 12) * 15 * DEG;
+    const pts = [E, 0, -E].map(dec => tipOf(g, dec, H, phi)).filter(Boolean);
+    if (pts.length < 2) continue;
+    const a = pts[0], z = pts[pts.length - 1];
+    el('line', { x1: r2(a[0]), y1: r2(-a[1]), x2: r2(z[0]), y2: r2(-z[1]), class: 'hour-line' + (h === 12 ? ' noon' : '') }, D);
+    // rótulo na ponta mais distante que ainda cabe na vista
+    let lp = null;
+    for (let s = 1; s >= 0; s -= 0.02) {
+      const q = [a[0] + (z[0] - a[0]) * s, a[1] + (z[1] - a[1]) * s];
+      if (inside(q)) { lp = q; break; }
+    }
+    if (lp && Math.hypot(lp[0] - g.x, lp[1] - g.y) > 8) {
+      const ux = z[0] - a[0], uy = z[1] - a[1], ul = Math.hypot(ux, uy) || 1;
+      const t = el('text', { x: r2(lp[0] + ux / ul * 2.2), y: r2(-(lp[1] + uy / ul * 2.2)), class: 'hour-lbl' }, D);
+      t.textContent = h + 'h';
+      if (!inside([lp[0] + ux / ul * 2.2, lp[1] + uy / ul * 2.2])) setA(t, { x: r2(lp[0]), y: r2(-lp[1]) });
+    }
+  }
+}
+
+function beamPolys(sun) {
+  const m = M(), e1 = m * sun.e, n1 = sun.n;
+  if (sun.alt <= 0 || e1 <= 1e-4) return [];
+  const s = n1 / e1, x0 = G.half;
+  const xcut = x0 - G.doorH * e1 / sun.u;
+  let lo = -G.doorHalf, hi = G.doorHalf;
+  const polys = [];
+  const rooms = [[x0, G.porchX, null], [G.porchX, G.veilX, [-G.doorHalf, G.doorHalf]], [G.veilX, -G.half, [-G.veilHalf, G.veilHalf]]];
+  for (const [xa, xb, ap] of rooms) {
+    if (ap) { lo = Math.max(lo, ap[0] - (xa - x0) * s); hi = Math.min(hi, ap[1] - (xa - x0) * s); }
+    if (lo >= hi || xcut >= xa) break;
+    const xe = Math.max(xb, xcut);
+    const ya = y => y + (xa - x0) * s, ye = y => y + (xe - x0) * s;
+    polys.push([[xa, ya(lo)], [xa, ya(hi)], [xe, ye(hi)], [xe, ye(lo)]].map(p => [m * p[0], p[1]]));
+    if (xcut > xb) break;
+  }
+  return polys;
+}
+
+function setShadow(line, x, y, h, sun) {
+  if (sun.alt <= 0) { line.setAttribute('visibility', 'hidden'); return; }
+  let kx = -h * sun.e / sun.u, ky = -h * sun.n / sun.u;
+  const len = Math.hypot(kx, ky);
+  if (len > G.cap) { kx *= G.cap / len; ky *= G.cap / len; }
+  setA(line, { visibility: 'visible', x1: r2(x), y1: r2(-y), x2: r2(x + kx), y2: r2(-(y + ky)) });
+}
+
+function capVec(kx, ky) { const l = Math.hypot(kx, ky); return l > G.cap ? [kx * G.cap / l, ky * G.cap / l] : [kx, ky]; }
+function ghostTime(day) {
+  if (S.anchor === 'noon') return 12;
+  if (S.anchor === 'rise' || S.anchor === 'set') { const t = timeForAlt(day, 4, S.anchor === 'rise' ? -1 : 1); return t == null ? 12 : t; }
+  return S.t;
+}
+function renderGhosts() {
+  const GG = L('lGhost'); GG.innerHTML = '';
+  if (!S.ghost) return;
+  const px = M() * G.pil.x;
+  // da mais longa para a mais curta, para que nenhuma sombra esconda outra
+  [[KEYS[3], 'dec'], [KEYS[0], 'eq'], [KEYS[1], 'jun']].map(([k, cls]) => [cls, sunAt(k.day, ghostTime(k.day))])
+    .sort((a, b) => a[1].u - b[1].u).forEach(([cls, sun]) => {
+    if (sun.alt <= 0.5) return;
+    [G.pil.y, -G.pil.y].forEach(py => {
+      const [kx, ky] = capVec(-G.pil.h * sun.e / sun.u, -G.pil.h * sun.n / sun.u);
+      el('line', { x1: r2(px), y1: r2(-py), x2: r2(px + kx), y2: r2(-(py + ky)), class: 'ghost ' + cls }, GG);
+      el('circle', { cx: r2(px + kx), cy: r2(-(py + ky)), r: 0.85, class: 'ghost-tip ' + cls }, GG);
+    });
+  });
+}
+function segDist(px, py, ax, ay, bx, by) {
+  const vx = bx - ax, vy = by - ay, l2 = vx * vx + vy * vy || 1;
+  const t = clamp(((px - ax) * vx + (py - ay) * vy) / l2, 0, 1);
+  return Math.hypot(px - (ax + t * vx), py - (ay + t * vy));
+}
+function inPoly(p, poly) {
+  let c = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i], [xj, yj] = poly[j];
+    if ((yi > p[1]) !== (yj > p[1]) && p[0] < (xj - xi) * (p[1] - yi) / (yj - yi) + xi) c = !c;
+  }
+  return c;
+}
+// colunas zodiacais alcançadas pela sombra de uma das colunas de bronze, da mais próxima à mais distante
+function shadowHits(py, sun, beam) {
+  if (sun.alt <= 0) return [];
+  const ax = M() * G.pil.x;
+  const [kx, ky] = capVec(-G.pil.h * sun.e / sun.u, -G.pil.h * sun.n / sun.u);
+  const out = [];
+  refs.colPos.forEach((p, i) => {
+    if (segDist(p[0], p[1], ax, py, ax + kx, py + ky) >= G.pil.r + G.col.r) return;
+    if (S.roof && !beam.some(poly => inPoly(p, poly))) return;
+    out.push(i);
+  });
+  const d = i => Math.hypot(refs.colPos[i][0] - ax, refs.colPos[i][1] - py);
+  return out.sort((a, b) => d(a) - d(b));
+}
+
+function renderPlan(st) {
+  const m = M(), sun = st.sun, up = sun.alt > 0;
+  L('lShadow').style.setProperty('--sf', up ? clamp(sun.alt / 3, 0, 1).toFixed(3) : '0');
+  const px = m * G.pil.x;
+  setShadow(refs.shB, px, G.pil.y, G.pil.h, sun);
+  setShadow(refs.shJ, px, -G.pil.y, G.pil.h, sun);
+  refs.colPos.forEach((p, i) => setShadow(refs.shCols[i], p[0], p[1], G.col.h, sun));
+
+  // sombra do edifício (com telhado)
+  if (S.roof && up) {
+    let ox = -G.bH * sun.e / sun.u, oy = -G.bH * sun.n / sun.u;
+    const len = Math.hypot(ox, oy); if (len > G.cap) { ox *= G.cap / len; oy *= G.cap / len; }
+    const o = G.half + G.wallT, w = G.halfW + G.wallT;
+    const fp = [[-o, -w], [o, -w], [o, w], [-o, w]];
+    const pts = hull(fp.concat(fp.map(p => [p[0] + ox, p[1] + oy])));
+    refs.bld.setAttribute('points', pts.map(p => P(p[0], p[1])).join(' '));
+  } else refs.bld.setAttribute('points', '');
+
+  // feixe pela porta; com telhado, J e B só fazem sombra fora do edifício ou dentro do feixe
+  const BG = L('lBeam'), CB = L('clipBeam'), CE = L('clipExt');
+  BG.innerHTML = ''; CB.innerHTML = ''; CE.innerHTML = '';
+  if (S.roof) {
+    const o = G.half + G.wallT, w = G.halfW + G.wallT;
+    el('path', { d: `M-300,-300H300V300H-300Z M${-o},${-w}H${o}V${w}H${-o}Z`, 'clip-rule': 'evenodd' }, CE);
+    st.beam.forEach(poly => {
+      const pts = poly.map(p => P(p[0], p[1])).join(' ');
+      el('polygon', { points: pts, class: 'beam' }, BG);
+      el('polygon', { points: pts }, CB);
+      el('polygon', { points: pts }, CE);
+    });
+  }
+
+  // eixo e diagonais acesos no alinhamento
+  const near = a => up && sun.alt < 12 && Math.abs(mod(sun.az - a + 180, 360) - 180) < 4;
+  L('axis').setAttribute('class', 'axis' + (near(m > 0 ? 90 : 270) ? ' lit' : ''));
+  refs.arms.forEach(a => a.line.setAttribute('class', 'solline ' + a.k + (near(a.az) ? ' lit' : '')));
+  renderGhosts();
+
+  // coluna ativa + ficha da viagem
+  const si = st.si;
+  refs.cols.forEach((c, i) => c.setAttribute('class', 'col' + (i === si ? ' on' : '')));
+  refs.halos.forEach((c, i) => c.setAttribute('class', 'halo' + (i === si ? ' on' : '')));
+  refs.glyphs.forEach((c, i) => c.setAttribute('class', 'zg' + (i === si ? ' on' : '')));
+  const li = Math.floor(st.lam / 30) % 12, f = (st.lam % 30) / 30, cp = refs.colPos;
+  let a, z, tt;
+  if (f >= 0.5) { a = cp[li]; z = cp[(li + 1) % 12]; tt = f - 0.5; } else { a = cp[(li + 11) % 12]; z = cp[li]; tt = f + 0.5; }
+  setA(L('token'), { cx: r2(a[0] + (z[0] - a[0]) * tt), cy: r2(-(a[1] + (z[1] - a[1]) * tt)) });
+
+  // traço da ponta da sombra hoje
+  const g = gnomon();
+  L('todayTrace').setAttribute('d', S.dial ? curvePath(g, st.dec0) : '');
+  const tip = up ? tipOf(g, sun.dec, sun.H, S.lat * DEG) : null;
+  if (tip && S.dial) setA(L('tipDot'), { cx: r2(tip[0]), cy: r2(-tip[1]), visibility: 'visible' });
+  else L('tipDot').setAttribute('visibility', 'hidden');
+
+  // nascer e pôr de hoje no anel
+  const ar = riseAz(st.dec0), Rr = G.ring - 2.4;
+  setA(refs.todayRise, { cx: r2(Rr * Math.sin(ar * DEG)), cy: r2(-Rr * Math.cos(ar * DEG)) });
+  setA(refs.todaySet, { cx: r2(-Rr * Math.sin(ar * DEG)), cy: r2(-Rr * Math.cos(ar * DEG)) });
+
+  // ícone do Sol e raio até o gnômon
+  const sR = G.ring + (S.narrow ? 0 : 0);
+  const sxp = sR * Math.sin(sun.az * DEG), syp = sR * Math.cos(sun.az * DEG);
+  L('sunIcon').setAttribute('transform', `translate(${P(sxp, syp)})`);
+  L('sunIcon').setAttribute('class', up ? '' : 'below');
+  if (up) setA(L('sunray'), { x1: r2(sxp), y1: r2(-syp), x2: r2(g.x), y2: r2(-g.y), visibility: 'visible' });
+  else L('sunray').setAttribute('visibility', 'hidden');
+
+  // noite
+  const na = sun.alt >= 6 ? 0 : sun.alt >= 0 ? 0.16 * (1 - sun.alt / 6) : 0.16 + 0.42 * clamp(-sun.alt / 18, 0, 1);
+  L('night').setAttribute('opacity', na.toFixed(3));
+
+  plan.setAttribute('aria-label', `Planta do templo em ${fmtDate(S.day)}, ${fmtTime(S.t)} hora solar. Sol a ${fmt(sun.alt, 0)}° de altura, azimute ${fmt(sun.az, 0)}°.`);
+}
+
+/* ---------- Céu ---------- */
+const sky = $('#sky');
+const SK = { c: 120, R: 100 };
+const skyXY = (alt, az) => { const r = SK.R * (90 - alt) / 90; return [SK.c + r * Math.sin(az * DEG), SK.c - r * Math.cos(az * DEG)]; };
+let skyRefs = {};
+function skyPath(dec) {
+  const phi = S.lat * DEG; let d = '', pen = false;
+  for (let Hd = -180; Hd <= 180; Hd += 0.5) {
+    const v = horiz(dec, Hd * DEG, phi); const alt = Math.asin(clamp(v.u, -1, 1)) * RAD;
+    if (alt < 0) { pen = false; continue; }
+    const az = Math.atan2(v.e, v.n) * RAD; const [x, y] = skyXY(alt, az);
+    d += (pen ? 'L' : 'M') + r2(x) + ',' + r2(y); pen = true;
+  }
+  return d;
+}
+function buildSky() {
+  sky.innerHTML = '';
+  const c = SK.c, R = SK.R;
+  el('circle', { cx: c, cy: c, r: R, class: 'sky-bg' }, sky);
+  el('line', { x1: c - R, y1: c, x2: c + R, y2: c, class: 'sky-cross' }, sky);
+  el('line', { x1: c, y1: c - R, x2: c, y2: c + R, class: 'sky-cross' }, sky);
+  [30, 60].forEach(a => {
+    el('circle', { cx: c, cy: c, r: R * (90 - a) / 90, class: 'sky-alt' }, sky);
+    const t = el('text', { x: c + 4, y: r2(c - R * (90 - a) / 90 - 5), class: 'sky-small', 'text-anchor': 'start' }, sky); t.textContent = a + '°';
+  });
+  el('circle', { cx: c, cy: c, r: R, class: 'sky-h' }, sky);
+  [['N', 0], ['L', 90], ['S', 180], ['O', 270]].forEach(([t, a]) => {
+    const tx = el('text', { x: r2(c + (R + 10) * Math.sin(a * DEG)), y: r2(c - (R + 10) * Math.cos(a * DEG)), class: 'sky-lbl' }, sky); tx.textContent = t;
+  });
+  const E = EPS * DEG;
+  [[E, 'jun'], [0, 'eq'], [-E, 'dec']].forEach(([dec, k]) => el('path', { d: skyPath(dec), class: 'sky-path ' + k }, sky));
+  skyRefs.today = el('path', { class: 'sky-today' }, sky);
+  el('circle', { cx: c, cy: c, r: 1.8, fill: 'currentColor', class: 'sky-small' }, sky);
+  const gs = el('g', null, sky);
+  skyRefs.glow = el('circle', { r: 11, class: 'sun-glow' }, gs);
+  skyRefs.sun = el('circle', { r: 6, class: 'sun-disc' }, gs);
+  skyRefs.g = gs;
+}
+function renderSky(st) {
+  skyRefs.today.setAttribute('d', skyPath(st.dec0));
+  const sun = st.sun;
+  const [x, y] = skyXY(Math.max(sun.alt, 0), sun.az);
+  skyRefs.g.setAttribute('transform', `translate(${r2(x)},${r2(y)})`);
+  skyRefs.g.setAttribute('class', sun.alt > 0 ? '' : 'below');
+}
+
+/* ---------- Roda do zodíaco ---------- */
+const wheel = $('#wheel');
+const WH = { cx: 145, cy: 131, Ro: 96, Ri: 66 };
+const wp = (r, a) => [WH.cx + r * Math.cos(a * DEG), WH.cy - r * Math.sin(a * DEG)];
+function annulus(a0, a1, ro, ri) {
+  const [x0, y0] = wp(ro, a0), [x1, y1] = wp(ro, a1), [x2, y2] = wp(ri, a1), [x3, y3] = wp(ri, a0);
+  return `M${r2(x0)},${r2(y0)}A${ro},${ro} 0 0 0 ${r2(x1)},${r2(y1)}L${r2(x2)},${r2(y2)}A${ri},${ri} 0 0 1 ${r2(x3)},${r2(y3)}Z`;
+}
+let wRefs = {};
+function buildWheel() {
+  wheel.innerHTML = '';
+  wRefs.glyphs = [];
+  for (let i = 0; i < 12; i++) {
+    el('path', { d: annulus(i * 30, i * 30 + 30, WH.Ro, WH.Ri), class: 'w-sec ' + (i < 6 ? 'w-n' : 'w-s') }, wheel);
+  }
+  for (let i = 0; i < 12; i++) {
+    const [x, y] = wp((WH.Ro + WH.Ri) / 2, i * 30 + 15);
+    const t = el('text', { x: r2(x), y: r2(y), class: 'w-glyph' }, wheel); t.textContent = SIGNS[i][1] + VS;
+    wRefs.glyphs.push(t);
+  }
+  wRefs.on = el('path', { class: 'w-on' }, wheel);
+  KEYS.forEach(k => {
+    const [x0, y0] = wp(WH.Ri - 5, k.lam), [x1, y1] = wp(WH.Ro + 5, k.lam);
+    el('line', { x1: r2(x0), y1: r2(y0), x2: r2(x1), y2: r2(y1), class: 'w-tick ' + k.kind }, wheel);
+    const [lx, ly] = wp(WH.Ro + 12, k.lam);
+    const anc = k.lam === 0 ? 'start' : k.lam === 180 ? 'end' : 'middle';
+    const t = el('text', { x: r2(k.lam === 0 ? lx - 4 : k.lam === 180 ? lx + 4 : lx), y: r2(ly + (k.lam === 0 || k.lam === 180 ? 0 : k.lam === 90 ? -1 : 2)), class: 'w-date', 'text-anchor': anc }, wheel);
+    t.textContent = fmtDateShort(k.day);
+  });
+  const hn = el('text', { x: WH.cx, y: WH.cy - 44, class: 'w-half' }, wheel); hn.textContent = 'colunas do Norte';
+  const hs = el('text', { x: WH.cx, y: WH.cy + 46, class: 'w-half' }, wheel); hs.textContent = 'colunas do Sul';
+  wRefs.cg = el('text', { x: WH.cx, y: WH.cy - 17, class: 'w-cg' }, wheel);
+  wRefs.cn = el('text', { x: WH.cx, y: WH.cy + 11, class: 'w-cn' }, wheel);
+  wRefs.cd = el('text', { x: WH.cx, y: WH.cy + 29, class: 'w-cd' }, wheel);
+  const sg = el('g', { class: 'w-sun', tabindex: '0', role: 'slider', 'aria-label': 'Posição do Sol no zodíaco', 'aria-valuemin': '0', 'aria-valuemax': '364' }, wheel);
+  el('circle', { r: 13, class: 'sun-glow' }, sg);
+  el('circle', { r: 7.5, class: 'sun-disc' }, sg);
+  wRefs.sun = sg;
+}
+function renderWheel(st) {
+  const si = st.si;
+  wRefs.on.setAttribute('d', annulus(si * 30, si * 30 + 30, WH.Ro, WH.Ri));
+  wRefs.glyphs.forEach((g, i) => g.setAttribute('class', 'w-glyph' + (i === si ? ' on' : '')));
+  const [x, y] = wp(WH.Ro, st.lam);
+  wRefs.sun.setAttribute('transform', `translate(${r2(x)},${r2(y)})`);
+  wRefs.sun.setAttribute('aria-valuenow', String(S.day));
+  wRefs.sun.setAttribute('aria-valuetext', `${fmtDate(S.day)}, Sol em ${SIGNS[si][0]}`);
+  wRefs.cg.textContent = SIGNS[si][1] + VS;
+  wRefs.cn.textContent = SIGNS[si][0];
+  wRefs.cd.textContent = `${fmtDateShort(S.day)} · λ ${fmt(st.lam, 1)}°`;
+}
+function dayForLam(lam) {
+  let best = 0, bd = 1e9;
+  for (let d = 0; d < 365; d++) { const df = Math.abs(mod(LAMTAB[d] - lam + 180, 360) - 180); if (df < bd) { bd = df; best = d; } }
+  return best;
+}
+function wheelPointer(ev) {
+  const pt = wheel.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  const p = pt.matrixTransform(wheel.getScreenCTM().inverse());
+  const lam = mod(Math.atan2(WH.cy - p.y, p.x - WH.cx) * RAD, 360);
+  setDay(dayForLam(lam));
+}
+let dragging = false;
+wheel.addEventListener('pointerdown', ev => { dragging = true; wheel.setPointerCapture(ev.pointerId); stop('year'); wheelPointer(ev); });
+wheel.addEventListener('pointermove', ev => { if (dragging) wheelPointer(ev); });
+wheel.addEventListener('pointerup', () => { dragging = false; });
+wheel.addEventListener('pointercancel', () => { dragging = false; });
+
+/* ---------- Textos ---------- */
+function nearKey() { return KEYS.find(k => k.day === S.day) || null; }
+function nextKey() {
+  let best = null, bd = 1e9;
+  KEYS.forEach(k => { const dd = mod(k.day - S.day, 365); if (dd > 0 && dd < bd) { bd = dd; best = k; } });
+  return { k: best, days: bd };
+}
+function noonAlt(dec) { return 90 - Math.abs(S.lat - dec * RAD); }
+
+function calloutText(st) {
+  const sun = st.sun, k = nearKey(), g = gnomon(), parts = [];
+  const ar = riseAz(st.dec0), off = 90 - ar;
+  const rooms = S.layout === 'salomao' ? ['o pórtico', 'o Lugar Santo', 'o Santo dos Santos'] : ['o átrio do Ocidente', 'o Templo', 'o Oriente'];
+  const doorWord = S.layout === 'salomao' ? 'leste' : 'oeste';
+  const lab = i => `<span class="g">${SIGNS[i][1] + VS}</span> ${SIGNS[i][0]}`;
+  if (k && k.kind === 'eq') {
+    parts.push(`<b>${k.name}.</b> O Sol nasce no Leste exato e se põe no Oeste exato. A ponta da sombra de ${g.name} anda em linha reta o dia inteiro, e logo após o nascer as sombras das colunas correm quase paralelas às fileiras do templo.`);
+    if (!S.roof) parts.push(`Escolha “Com telhado” e ${S.layout === 'salomao' ? '“Nascer”' : '“Pôr”'} para ver a luz percorrer o eixo até ${rooms[2]}.`);
+  } else if (k && (k.kind === 'jun' || k.kind === 'dec')) {
+    const north = k.kind === 'jun';
+    const na = noonAlt(st.dec0);
+    let s = `<b>${k.name}.</b> O Sol entra em ${north ? 'Câncer' : 'Capricórnio'} e o nascente chega ao ponto mais ao ${north ? 'norte' : 'sul'} do horizonte, ${fmt(Math.abs(off), 1)}° ${north ? 'ao norte' : 'ao sul'} do Leste. O nascer de hoje e o pôr do solstício ${north ? 'de dezembro' : 'de junho'} ficam na mesma reta, a diagonal ${north ? 'vermelha' : 'azul'} da planta.`;
+    s += ` Ao meio-dia o Sol sobe a ${fmt(na, 1)}°`;
+    if (Math.abs(S.lat) > EPS) s += (north === (S.lat > 0)) ? ', a sombra de meio-dia mais curta do ano.' : ', a sombra de meio-dia mais longa do ano.';
+    else s += '.';
+    s += ` A tradição liga esta porta solsticial a ${north ? 'São João Batista (24 de junho)' : 'São João Evangelista (27 de dezembro)'}.`;
+    parts.push(s);
+  } else {
+    const si = st.si, nk = nextKey();
+    const sideTxt = Math.abs(off) < 0.05 ? 'praticamente no Leste' : `${fmt(Math.abs(off), 1)}° ao ${off > 0 ? 'norte' : 'sul'} do Leste`;
+    parts.push(`O Sol percorre <b>${SIGNS[si][0]}</b> (${fmt(st.lam % 30, 0)}° de 30°), a coluna em destaque. Faltam ${nk.days} dias para o ${nk.k.name.toLowerCase()}. Hoje o Sol nasce ${sideTxt}.`);
+  }
+  if (sun.alt <= 0) { parts.push('Agora o Sol está abaixo do horizonte: toque em Nascer ou avance a hora.'); return parts.join(' '); }
+  const Ls = G.pil.h / Math.tan(sun.alt * DEG);
+  parts.push(`A sombra de ${g.name} aponta para ${dir8(sun.az + 180)} e mede ${fmt(Ls, Ls < 100 ? 1 : 0)} côvados (${fmt(Ls * G.cubit, Ls < 100 ? 1 : 0)} m).`);
+  // colunas zodiacais tocadas pelas sombras de Boaz e Jachin
+  const order = S.lat >= 0 ? [['Boaz', G.pil.y], ['Jachin', -G.pil.y]] : [['Jachin', -G.pil.y], ['Boaz', G.pil.y]];
+  const clauses = [];
+  order.forEach(([name, py]) => {
+    const h = shadowHits(py, sun, st.beam);
+    if (!h.length) return;
+    const who = clauses.length ? `a de ${name}` : `a sombra de ${name}`;
+    if (h.length === 1) clauses.push(`${who} toca a coluna de ${lab(h[0])}`);
+    else if (h.length === 2) clauses.push(`${who} passa pelas colunas de ${lab(h[0])} e ${lab(h[1])}`);
+    else clauses.push(`${who} cobre ${h.length} colunas, de ${lab(h[0])} a ${lab(h[h.length - 1])}`);
+  });
+  if (clauses.length) parts.push('Agora ' + clauses.join(', e ') + '.');
+  if (S.roof) {
+    const n = st.beam.length;
+    if (n) parts.push(`A luz que entra pela porta ${doorWord} ${n === 1 ? 'não passa d' + rooms[0] : n === 2 ? 'chega a' + rooms[1] : 'alcança ' + rooms[2]}.`);
+    else parts.push(`O Sol não entra pela porta ${doorWord} agora.`);
+  }
+  return parts.join(' ');
+}
+
+function renderReadout(st) {
+  const sun = st.sun, g = gnomon();
+  const tr = timeForAlt(S.day, 0, -1), ts = timeForAlt(S.day, 0, 1);
+  const ar = riseAz(st.dec0);
+  const Ls = sun.alt > 0.3 ? G.pil.h / Math.tan(sun.alt * DEG) : null;
+  const Ln = G.pil.h / Math.tan(noonAlt(st.dec0) * DEG);
+  const si = Math.floor(st.lam / 30) % 12;
+  const rows = [
+    ['Altura do Sol', `${fmt(sun.alt, 1)}°`],
+    ['Azimute', `${fmt(sun.az, 1)}° · ${dir16(sun.az)}`],
+    ['Declinação', `${st.dec0 >= 0 ? '+' : '−'}${fmt(Math.abs(st.dec0 * RAD), 2)}°`],
+    ['Longitude eclíptica', `${fmt(st.lam, 1)}° <span class="g">${SIGNS[si][1] + VS}</span>`],
+    ['Nascer · pôr', tr == null ? '—' : `${fmtTime(tr)} · ${fmtTime(ts)}`],
+    ['Duração do dia', tr == null ? '—' : fmtTime(ts - tr).replace(/^0/, '')],
+    ['Nascente no horizonte', `${fmt(ar, 1)}° · ${Math.abs(90 - ar) < 0.05 ? 'Leste exato' : fmt(Math.abs(90 - ar), 1) + '° ' + (ar < 90 ? 'N' : 'S') + ' do L'}`],
+    [`Sombra de ${g.name} agora`, Ls == null ? '—' : `${fmt(Ls, Ls < 100 ? 1 : 0)} côv. · ${fmt(Ls * G.cubit, 1)} m`],
+    [`Sombra ao meio-dia`, `${fmt(Ln, 1)} côv. · ${fmt(Ln * G.cubit, 1)} m`]
+  ];
+  $('#readout').innerHTML = rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('');
+}
+
+/* ---------- Render geral ---------- */
+function state() {
+  const sun = sunAt(S.day, S.t);
+  const { dec } = solar(S.day + 0.5);
+  const k = nearKey();
+  return { sun, lam: sun.lam, dec0: dec, si: k ? k.sign : Math.floor(sun.lam / 30) % 12, beam: S.roof ? beamPolys(sun) : [] };
+}
+function render() {
+  if (S.anchor !== 'free') S.t = anchorTime();
+  const st = state();
+  renderPlan(st); renderSky(st); renderWheel(st);
+  const k = nearKey();
+  const chip = $('#chip');
+  const si = st.si;
+  if (k) { chip.innerHTML = k.name; chip.style.setProperty('--chip', `var(--${k.kind})`); }
+  else { chip.innerHTML = `Sol em <span class="g">${SIGNS[si][1] + VS}</span> ${SIGNS[si][0]}`; chip.style.setProperty('--chip', 'var(--bronze)'); }
+  $('#whenTxt').textContent = `${fmtDate(S.day)} de 2026`;
+  $('#whereTxt').textContent = `${placeName()} · ${latStr(S.lat)} · ${fmtTime(S.t)} hora solar`;
+  $('#callout').innerHTML = calloutText(st);
+  renderReadout(st);
+  // controles
+  const ti = $('#time'); const tv = Math.round(mod(S.t, 24) * 60); if (+ti.value !== tv) ti.value = tv;
+  $('#timeOut').textContent = fmtTime(S.t);
+  const di = $('#date'); if (+di.value !== S.day) di.value = S.day;
+  $('#dateOut').textContent = fmtDateShort(S.day);
+  document.querySelectorAll('[data-anchor]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.anchor === S.anchor)));
+  document.querySelectorAll('[data-key]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.day === S.day)));
+}
+
+/* ---------- Controles ---------- */
+const keyBox = $('#keyBtns');
+KEYS.forEach(k => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.dataset.key = k.id; b.dataset.day = k.day; b.setAttribute('aria-pressed', 'false');
+  b.innerHTML = `<span class="k" style="--c:var(--${k.kind})"></span>${k.short} · ${fmtDateShort(k.day)}`;
+  b.addEventListener('click', () => { stop('year'); setDay(k.day); });
+  keyBox.appendChild(b);
+});
+function setDay(d) { S.day = mod(Math.round(d), 365); S.dayF = S.day; render(); }
+
+$('#time').addEventListener('input', e => { stop('day'); S.anchor = 'free'; S.t = +e.target.value / 60; render(); });
+$('#date').addEventListener('input', e => { stop('year'); setDay(+e.target.value); });
+document.querySelectorAll('[data-anchor]').forEach(b => b.addEventListener('click', () => { stop('day'); S.anchor = b.dataset.anchor; render(); }));
+
+const placeSel = $('#place');
+PLACES.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = p.lat == null ? p.name : `${p.name} · ${latStr(p.lat)}`; placeSel.appendChild(o); });
+placeSel.value = S.place;
+function setLat(lat) {
+  S.lat = clamp(lat, -60, 60);
+  $('#lat').value = S.lat; $('#latOut').textContent = latStr(S.lat);
+  buildPlan(); buildSky(); render();
+}
+placeSel.addEventListener('change', () => {
+  S.place = placeSel.value; const p = PLACES.find(x => x.id === S.place);
+  if (p && p.lat != null) setLat(p.lat); else render();
+});
+$('#lat').addEventListener('input', e => { S.place = 'custom'; placeSel.value = 'custom'; setLat(+e.target.value); });
+
+document.querySelectorAll('[data-layout]').forEach(b => b.addEventListener('click', () => {
+  S.layout = b.dataset.layout;
+  document.querySelectorAll('[data-layout]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  buildPlan(); render();
+}));
+document.querySelectorAll('[data-roof]').forEach(b => b.addEventListener('click', () => {
+  S.roof = b.dataset.roof === '1';
+  document.querySelectorAll('[data-roof]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  buildPlan(); render();
+}));
+$('#zdir').addEventListener('change', e => { S.zdir = e.target.value; buildPlan(); render(); });
+$('#dial').addEventListener('change', e => { S.dial = e.target.checked; buildDial(); render(); });
+$('#ghost').addEventListener('change', e => { S.ghost = e.target.checked; render(); });
+
+wheel.addEventListener('keydown', e => {
+  const step = e.shiftKey ? 10 : 1;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); stop('year'); setDay(S.day + step); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); stop('year'); setDay(S.day - step); }
+});
+
+/* ---------- Roteiros ---------- */
+const TOURS = {
+  eqcols:  { key: 0, anchor: 'rise', roof: false, layout: 'salomao', place: 'jerusalem' },
+  eqlight: { key: 0, anchor: 'rise', roof: true,  layout: 'salomao', place: 'jerusalem' },
+  solx:    { key: 1, anchor: 'rise', roof: false, layout: 'salomao', place: 'jerusalem' },
+  noon:    { key: 3, anchor: 'noon', roof: false, layout: 'salomao', place: 'jerusalem', ghost: true },
+  swing:   { key: 0, anchor: 'rise', roof: false, layout: 'salomao', place: 'jerusalem', play: 'year' },
+  south:   { key: 1, anchor: 'noon', roof: false, layout: 'salomao', place: 'saopaulo' },
+  lodge:   { key: 2, anchor: 'set',  roof: true,  layout: 'loja',    place: 'jerusalem' }
+};
+function applyTour(t) {
+  stop();
+  S.layout = t.layout; S.roof = t.roof; S.anchor = t.anchor;
+  if (t.ghost) { S.ghost = true; $('#ghost').checked = true; }
+  const p = PLACES.find(x => x.id === t.place);
+  S.place = p.id; placeSel.value = p.id; S.lat = p.lat; $('#lat').value = S.lat; $('#latOut').textContent = latStr(S.lat);
+  document.querySelectorAll('[data-layout]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.layout === S.layout)));
+  document.querySelectorAll('[data-roof]').forEach(x => x.setAttribute('aria-pressed', String((x.dataset.roof === '1') === S.roof)));
+  S.day = KEYS[t.key].day; S.dayF = S.day;
+  buildPlan(); buildSky(); render();
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelector('.plan-card').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  if (t.play) start(t.play);
+}
+document.querySelectorAll('[data-tour]').forEach(b => b.addEventListener('click', () => applyTour(TOURS[b.dataset.tour])));
+
+/* ---------- Animação ---------- */
+let raf = 0, last = 0;
+function setPlayUI() {
+  [['day', '#playDay'], ['year', '#playYear']].forEach(([k, id]) => {
+    const b = $(id), on = S.playing === k;
+    b.setAttribute('aria-pressed', String(on));
+    b.querySelector('path').setAttribute('d', on ? 'M2 1h3v10H2zM7 1h3v10H7z' : 'M2 1l9 5-9 5z');
+  });
+}
+function stop(kind) { if (!kind || S.playing === kind) { S.playing = null; cancelAnimationFrame(raf); setPlayUI(); } }
+function start(kind) {
+  S.playing = kind; if (kind === 'day') S.anchor = 'free';
+  S.dayF = S.day; last = performance.now(); setPlayUI();
+  cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+}
+function loop(ts) {
+  const dt = Math.min(0.05, (ts - last) / 1000); last = ts;
+  if (S.playing === 'day') {
+    S.t += dt * 1.15;
+    const st = sunAt(S.day, S.t);
+    if (st.alt < -2 && S.t > 12) { const r = timeForAlt(S.day, 0, -1); S.t = r == null ? 0 : r - 0.2; }
+    else if (S.t >= 24) S.t -= 24;
+  } else if (S.playing === 'year') {
+    S.dayF = (S.dayF + dt * 24) % 365; S.day = Math.floor(S.dayF);
+  } else return;
+  render();
+  raf = requestAnimationFrame(loop);
+}
+$('#playDay').addEventListener('click', () => (S.playing === 'day' ? stop('day') : start('day')));
+$('#playYear').addEventListener('click', () => (S.playing === 'year' ? stop('year') : start('year')));
+
+/* ---------- Início ---------- */
+const mq = window.matchMedia('(max-width: 640px)');
+S.narrow = mq.matches;
+const onMq = () => { S.narrow = mq.matches; buildPlan(); render(); };
+if (mq.addEventListener) mq.addEventListener('change', onMq); else mq.addListener(onMq);
+
+buildPlan(); buildSky(); buildWheel(); render();
+})();
+</script>
+</body>
+</html>
